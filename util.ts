@@ -1,4 +1,4 @@
-import * as ink from "https://deno.land/x/ink@1.3/mod.ts";
+import { ink } from "./deps.ts";
 import { Entry, Options } from "./mod.ts";
 
 const addFileLogMessageFormat = (file: string) =>

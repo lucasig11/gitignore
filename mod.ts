@@ -1,10 +1,5 @@
 //! Small command-line utility for adding new entries to `.gitignore`.
-/// deno install --allow-read --allow-write mod.ts
-import * as ink from "https://deno.land/x/ink@1.3/mod.ts";
-import { wait } from "https://deno.land/x/wait@0.1.12/mod.ts";
-import { Input } from "https://deno.land/x/cliffy@v0.20.1/prompt/input.ts";
-import { Toggle } from "https://deno.land/x/cliffy@v0.20.1/prompt/toggle.ts";
-
+import { ink, Input, Toggle, wait } from "./deps.ts";
 import { parseArgs, printUsage, printVersion } from "./args.ts";
 import {
   addFileLogMessageFormat,

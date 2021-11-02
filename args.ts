@@ -1,6 +1,4 @@
-import * as ink from "https://deno.land/x/ink@1.3/mod.ts";
-import { readLines } from "https://deno.land/std@0.113.0/io/buffer.ts";
-import { parse } from "https://deno.land/std@0.113.0/flags/mod.ts";
+import { ink, parse, readLines } from "./deps.ts";
 
 export interface Arguments {
   confirm: boolean;

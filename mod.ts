@@ -106,9 +106,6 @@ async function run(files: string[], opts: Options) {
       new TextEncoder().encode(
         added.map((entry) => entry.name).join("\n") + "\n",
       ),
-      {
-        append: !opts.overwrite,
-      },
     );
   }
 

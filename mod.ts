@@ -157,7 +157,7 @@ function log(msg: string) {
 
 function formatLog(log: string[], format: (file: string) => string) {
   return log.map((file) =>
-    ink.colorize(`    ${DRY_RUN ? "[dry-run] " : ""}${format(file)}`)
+    ink.colorize(`${DRY_RUN ? "[dry-run] " : ""}    ${format(file)}`)
   ).join("\n");
 }
 

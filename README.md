@@ -1,6 +1,6 @@
 
 # GitIgnore
-<p align="center">you know what it does<\p>
+<p align="center">you know what it does </p>
 
 
 ## Install

@@ -2,6 +2,8 @@
 /// deno install --allow-read --allow-write mod.ts
 import * as ink from "https://deno.land/x/ink@1.3/mod.ts";
 import { wait } from "https://deno.land/x/wait@0.1.12/mod.ts";
+import { Input } from "https://deno.land/x/cliffy@v0.20.1/prompt/input.ts";
+import { Toggle } from "https://deno.land/x/cliffy@v0.20.1/prompt/toggle.ts";
 
 import { parseArgs, printUsage, printVersion } from "./args.ts";
 import {
@@ -32,14 +34,15 @@ interface IgnoredFiles {
   [key: string]: boolean;
 }
 
-async function main() {
-  const {
+async function main(): Promise<void> {
+  let {
     verbose,
     overwrite,
     dryRun,
     help,
     version,
     lang,
+    search,
     entries,
   } = await parseArgs();
 
@@ -59,84 +62,77 @@ async function main() {
     Deno.exit(1);
   }
 
+  if (search) {
+    lang = await listTemplates();
+  }
+
   if (entries.length == 0 && !lang) {
     printUsage();
     console.log(ink.colorize("\n<red><b>error:</b></red> No files specified"));
     Deno.exit(1);
   }
 
-  let files = entries;
   if (lang) {
-    const response = await fetchLanguages(lang);
-    files = files.concat(response);
+    const spinner = wait(
+      ink.colorize(`Fetching a template for <green>${lang}</green>`),
+    ).start();
+    try {
+      entries = entries.concat(await fetchTemplate(lang));
+    } catch (error) {
+      spinner.fail();
+      console.error(ink.colorize(error));
+      Deno.exit(1);
+    } finally {
+      spinner.succeed();
+    }
   }
 
-  const [addCount, skipCount] = await run(files, {
+  await run(entries, {
     verbose,
     dryRun,
     overwrite,
   });
+}
 
-  console.log(
+async function listTemplates(): Promise<string> {
+  const templates: string[] = await fetchTemplate("list");
+  const languages: string[] = templates.flatMap((line) => line.split(","));
+
+  const selected = await Input.prompt(
+    {
+      message: "Select a language:",
+      suggestions: languages,
+      list: true,
+      info: true,
+    },
+  );
+
+  const confirm: boolean = await Toggle.prompt(
     ink.colorize(
-      `<green><b>Done!</b></green> Added <green>${addCount}</green> new entries. Skipped <yellow>${skipCount}</yellow>.`,
+      `Would you like to use the <green>${selected}</green> template?`,
     ),
   );
-}
 
-async function parseEntries(rawEntries: string[]): Promise<Entries> {
-  const ignoredEntries = await getIgnoredEntries();
-
-  const skipped: Entry[] = rawEntries.filter((entry) => ignoredEntries[entry])
-    .map((entry) => ({
-      name: entry,
-      isComment: entry.startsWith("#"),
-    }));
-
-  const added: Entry[] = rawEntries.filter((entry) => !ignoredEntries[entry])
-    .map((entry) => ({
-      name: entry,
-      isComment: entry.startsWith("#"),
-    }));
-
-  return {
-    added,
-    skipped,
-    addCount: added.filter((entry) => !entry.isComment).length,
-    skipCount: skipped.filter((entry) => !entry.isComment).length,
-  };
-}
-
-async function fetchLanguages(lang: string): Promise<string[]> {
-  const spinner = wait(
-    ink.colorize(`Fetching a template for <green>${lang}</green>`),
-  )
-    .start();
-  try {
-    const response = await fetch(`https://www.gitignore.io/api/${lang}`);
-    if (response.status != 200) {
-      spinner.fail();
-      console.error(
-        ink.colorize(
-          `<red>error:</red> failed to fetch a template for <yellow>${lang}</yellow>`,
-        ),
-      );
-      Deno.exit(1);
-    }
-    const data = await response.text();
-    const lines = data.split("\n");
-    return lines.filter((line) => line.trim().length > 0);
-  } catch (error) {
-    spinner.fail();
-    console.error("Unexpected error:", error);
-    Deno.exit(1);
-  } finally {
-    spinner.succeed();
+  if (!confirm) {
+    Deno.exit(0);
   }
-  return [];
+
+  return selected;
 }
 
-async function run(files: string[], opts: Options): Promise<[number, number]> {
+async function fetchTemplate(lang: string): Promise<string[]> {
+  const response = await fetch(`https://www.gitignore.io/api/${lang}`);
+  if (response.status != 200) {
+    throw new Error(
+      `<red>error:</red> failed to fetch a template for <yellow>${lang}</yellow>`,
+    );
+  }
+  const data = await response.text();
+  const lines = data.split("\n");
+  return lines.filter((line) => line.trim().length > 0);
+}
+
+async function run(files: string[], opts: Options): Promise<void> {
   // Delete the old file if we are overwriting
   if (opts.overwrite) {
     try {
@@ -170,7 +166,34 @@ async function run(files: string[], opts: Options): Promise<[number, number]> {
     );
   }
 
-  return [addCount, skipCount];
+  console.log(
+    ink.colorize(
+      `<green><b>Done!</b></green> Added <green>${addCount}</green> new entries. Skipped <yellow>${skipCount}</yellow>.`,
+    ),
+  );
+}
+
+async function parseEntries(rawEntries: string[]): Promise<Entries> {
+  const ignoredEntries = await getIgnoredEntries();
+
+  const skipped: Entry[] = rawEntries.filter((entry) => ignoredEntries[entry])
+    .map((entry) => ({
+      name: entry,
+      isComment: entry.startsWith("#"),
+    }));
+
+  const added: Entry[] = rawEntries.filter((entry) => !ignoredEntries[entry])
+    .map((entry) => ({
+      name: entry,
+      isComment: entry.startsWith("#"),
+    }));
+
+  return {
+    added,
+    skipped,
+    addCount: added.filter((entry) => !entry.isComment).length,
+    skipCount: skipped.filter((entry) => !entry.isComment).length,
+  };
 }
 
 // Get the list of files that are already ignored

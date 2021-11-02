@@ -9,6 +9,7 @@ export interface Arguments {
   dryRun: boolean;
   overwrite: boolean;
   lang: string;
+  search: boolean;
   entries: string[];
 }
 
@@ -17,25 +18,35 @@ export interface Flags {
 }
 
 export async function parseArgs(): Promise<Arguments> {
-  const list: string[] = [];
+  const piped: string[] = [];
 
   if (!Deno.isatty(Deno.stdin.rid)) {
     for await (const line of readLines(Deno.stdin)) {
-      line && list.push(line);
+      line && piped.push(line);
     }
   }
 
-  const { lang, help, verbose, version, dryRun, _: entries, overwrite } = parse(
+  const {
+    lang,
+    search,
+    help,
+    verbose,
+    version,
+    dryRun,
+    _: entries,
+    overwrite,
+  } = parse(
     [
-      ...list,
+      ...piped,
       ...Deno.args,
     ],
     {
-      boolean: ["help", "version", "verbose", "dryRun", "overwrite"],
+      boolean: ["help", "search", "version", "verbose", "dryRun", "overwrite"],
       string: ["lang"],
       alias: {
         h: "help",
         l: "lang",
+        s: "search",
         v: "verbose",
         V: "version",
         d: "dryRun",
@@ -50,15 +61,16 @@ export async function parseArgs(): Promise<Arguments> {
     overwrite,
     dryRun,
     version,
+    search,
     lang,
     entries: entries.map((entry) => entry.toString()),
   };
 }
 
 export function printUsage() {
+  printVersion();
   console.log(ink.colorize(
-    `gitignore v1.0.0
-Small command-line utility for adding new entries to .gitignore.
+    `Small command-line utility for adding new entries to .gitignore.
 This is free software, and you are welcome to redistribute it under the terms of the GPLv3 license.
 
 <yellow>USAGE:    </yellow><green>gitignore</green> <yellow>[FLAGS] [OPTIONS] <FILES></yellow>...
@@ -70,6 +82,7 @@ This is free software, and you are welcome to redistribute it under the terms of
     -d,  --dry-run          Do not perform I/O operations.
     -o,  --overwrite        Overwrites the .gitignore file if it already exists.
     -v,  --verbose          Prints the files that are being added/skipped.
+    -s   --search           Lists the available templates and lets you pick one.
     -h,  --help             Prints this help message.
     -V   --version          Prints the version number.
 
@@ -79,6 +92,5 @@ This is free software, and you are welcome to redistribute it under the terms of
 }
 
 export function printVersion() {
-  console.log("gitignore v1.0.0");
-  console.log("GPLv3");
+  console.log("v0.1");
 }

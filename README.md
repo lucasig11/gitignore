@@ -1,5 +1,5 @@
 
-# GitIgnore
+ <h1 align="center">GitIgnore</h1>
 <p align="center">you know what it does </p>
 
 

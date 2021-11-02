@@ -81,7 +81,7 @@ async function main(): Promise<void> {
       entries = entries.concat(await fetchTemplate(lang));
     } catch (error) {
       spinner.fail();
-      console.error(ink.colorize(error));
+      console.error(ink.colorize(error.toString()));
       Deno.exit(1);
     } finally {
       spinner.succeed();

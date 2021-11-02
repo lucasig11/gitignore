@@ -95,7 +95,7 @@ async function main(): Promise<void> {
   });
 }
 
-async function listTemplates(skip_confirm: boolean): Promise<string> {
+async function listTemplates(skipConfirm: boolean): Promise<string> {
   const templates: string[] = await fetchTemplate("list");
   const languages: string[] = templates.flatMap((line) => line.split(","));
 
@@ -108,7 +108,7 @@ async function listTemplates(skip_confirm: boolean): Promise<string> {
     },
   );
 
-  const confirm: boolean = skip_confirm || await Toggle.prompt(
+  const confirm: boolean = skipConfirm || await Toggle.prompt(
     ink.colorize(
       `Would you like to use the <green>${selected}</green> template?`,
     ),

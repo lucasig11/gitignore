@@ -49,43 +49,63 @@ async function main() {
   });
 }
 
+export interface Entry {
+  name: string;
+  isComment: boolean;
+}
+
+interface Entries {
+  added: Entry[];
+  skipped: Entry[];
+  addCount: number;
+  skipCount: number;
+}
+
+async function parseEntries(rawEntries: string[]): Promise<Entries> {
+  const ignoredEntries = await getIgnoredEntries();
+
+  const skipped: Entry[] = rawEntries.filter((entry) => ignoredEntries[entry])
+    .map((entry) => ({
+      name: entry,
+      isComment: entry.startsWith("#"),
+    }));
+
+  const added: Entry[] = rawEntries.filter((entry) => !ignoredEntries[entry])
+    .map((entry) => ({
+      name: entry,
+      isComment: entry.startsWith("#"),
+    }));
+
+  return {
+    added,
+    skipped,
+    addCount: added.filter((entry) => !entry.isComment).length,
+    skipCount: skipped.filter((entry) => !entry.isComment).length,
+  };
+}
+
 async function run(files: string[], opts: Options) {
-  const skipped: string[] = [];
+  // Delete the old file if we are overwriting
+  if (opts.overwrite) {
+    await Deno.remove(".gitignore");
+  }
 
-  const encoder = new TextEncoder();
-  const ignoredFiles = await getIgnoredFiles();
+  const { added, skipped, skipCount, addCount } = await parseEntries(files);
 
-  const added = files.filter((file) => {
-    if (ignoredFiles[file]) {
-      if (opts.verbose) {
-        skipped.push(file);
-      }
-      return false;
-    }
-    return true;
-  });
-
-  if (added.length == 0) {
-    console.log(ink.colorize("\n<yellow>No files to add</yellow>"));
+  if (addCount == 0) {
+    console.log(ink.colorize("\n<yellow>No files to add</yellow>\n"));
     Deno.exit(0);
   }
 
-  log(
-    added,
-    addFileLogMessageFormat,
-    opts,
-  );
-
-  log(
-    skipped,
-    skipFileLogMessageFormat,
-    opts,
-  );
+  log(added, addFileLogMessageFormat, opts);
+  log(skipped, skipFileLogMessageFormat, opts);
 
   if (!opts.dryRun) {
     await Deno.writeFile(
       ".gitignore",
-      encoder.encode(added.join("\n") + "\n"),
+      new TextEncoder().encode(
+        added.map((entry) => entry.name).join("\n") + "\n",
+      ),
       {
         append: !opts.overwrite,
       },
@@ -94,13 +114,13 @@ async function run(files: string[], opts: Options) {
 
   console.log(
     ink.colorize(
-      `<green><b>Done!</b></green> Added <green>${added.length}</green> new entries. Skipped <yellow>${skipped.length}</yellow>.`,
+      `<green><b>Done!</b></green> Added <green>${addCount}</green> new entries. Skipped <yellow>${skipCount}</yellow>.`,
     ),
   );
 }
 
 // Get the list of files that are already ignored
-async function getIgnoredFiles(): Promise<IgnoredFiles> {
+async function getIgnoredEntries(): Promise<IgnoredFiles> {
   try {
     const content = await Deno.readFile(".gitignore");
     const lines = new TextDecoder().decode(content).split("\n");

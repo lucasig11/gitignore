@@ -7,7 +7,7 @@ interface Arguments {
   help: boolean;
   version: boolean;
   verbose: boolean;
-  dry_run: boolean;
+  dryRun: boolean;
   files: string[];
 }
 
@@ -37,7 +37,7 @@ async function parseArgs(): Promise<Arguments> {
     help: parsedFlags["help"] || parsedFlags["h"],
     version: parsedFlags["version"],
     verbose: parsedFlags["verbose"] || parsedFlags["v"],
-    dry_run: parsedFlags["dry-run"],
+    dryRun: parsedFlags["dry-run"],
     files,
   };
 }
@@ -97,7 +97,7 @@ async function run() {
   if (args.verbose) {
     VERBOSE = true;
   }
-  if (args.dry_run) {
+  if (args.dryRun) {
     DRY_RUN = true;
   }
   if (args.files.length == 0) {

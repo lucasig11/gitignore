@@ -3,14 +3,15 @@ import { readLines } from "https://deno.land/std@0.113.0/io/buffer.ts";
 import { parse } from "https://deno.land/std@0.113.0/flags/mod.ts";
 
 export interface Arguments {
+  confirm: boolean;
+  dryRun: boolean;
+  entries: string[];
   help: boolean;
+  lang: string;
+  overwrite: boolean;
+  search: boolean;
   version: boolean;
   verbose: boolean;
-  dryRun: boolean;
-  overwrite: boolean;
-  lang: string;
-  search: boolean;
-  entries: string[];
 }
 
 export interface Flags {
@@ -27,12 +28,13 @@ export async function parseArgs(): Promise<Arguments> {
   }
 
   const {
+    confirm,
+    dryRun,
+    help,
     lang,
     search,
-    help,
     verbose,
     version,
-    dryRun,
     _: entries,
     overwrite,
   } = parse(
@@ -41,29 +43,39 @@ export async function parseArgs(): Promise<Arguments> {
       ...Deno.args,
     ],
     {
-      boolean: ["help", "search", "version", "verbose", "dryRun", "overwrite"],
+      boolean: [
+        "confirm",
+        "help",
+        "search",
+        "version",
+        "verbose",
+        "dryRun",
+        "overwrite",
+      ],
       string: ["lang"],
       alias: {
+        d: "dryRun",
         h: "help",
         l: "lang",
+        o: "overwrite",
         s: "search",
         v: "verbose",
         V: "version",
-        d: "dryRun",
-        o: "overwrite",
+        y: "confirm",
       },
     },
   );
 
   return {
-    help,
-    verbose,
-    overwrite,
+    confirm,
     dryRun,
-    version,
-    search,
-    lang,
     entries: entries.map((entry) => entry.toString()),
+    help,
+    lang,
+    overwrite,
+    search,
+    version,
+    verbose,
   };
 }
 
@@ -79,6 +91,7 @@ This is free software, and you are welcome to redistribute it under the terms of
     -l,  --lang=<STRING>    Language/framework to fetch a template for. Ex: react, python, ruby, etc.
 
 <yellow>FLAGS:</yellow>
+    -y,  --confirm          Skip confirmation prompt.
     -d,  --dry-run          Do not perform I/O operations.
     -o,  --overwrite        Overwrites the .gitignore file if it already exists.
     -v,  --verbose          Prints the files that are being added/skipped.
@@ -92,5 +105,5 @@ This is free software, and you are welcome to redistribute it under the terms of
 }
 
 export function printVersion() {
-  console.log("v0.1");
+  console.log("v0.1.0");
 }

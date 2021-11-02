@@ -41,6 +41,7 @@ async function main(): Promise<void> {
     dryRun,
     help,
     version,
+    confirm,
     lang,
     search,
     entries,
@@ -63,7 +64,7 @@ async function main(): Promise<void> {
   }
 
   if (search) {
-    lang = await listTemplates();
+    lang = await listTemplates(confirm);
   }
 
   if (entries.length == 0 && !lang) {
@@ -94,7 +95,7 @@ async function main(): Promise<void> {
   });
 }
 
-async function listTemplates(): Promise<string> {
+async function listTemplates(skip_confirm: boolean): Promise<string> {
   const templates: string[] = await fetchTemplate("list");
   const languages: string[] = templates.flatMap((line) => line.split(","));
 
@@ -107,7 +108,7 @@ async function listTemplates(): Promise<string> {
     },
   );
 
-  const confirm: boolean = await Toggle.prompt(
+  const confirm: boolean = skip_confirm || await Toggle.prompt(
     ink.colorize(
       `Would you like to use the <green>${selected}</green> template?`,
     ),

@@ -5,8 +5,7 @@ Small command-line utility that adds new entries to your `.gitignore`.
 ## Install
 
 ```sh
-deno install --unstable --allow-net --allow-read --allow-write \
-    https://deno.land/x/gitignore@v0.1.0/mod.ts
+deno install --unstable --allow-net --allow-read --allow-write https://deno.land/x/gitignore@v0.1.0/mod.ts
 ```
 
 ## Usage

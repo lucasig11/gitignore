@@ -58,6 +58,13 @@ async function main(): Promise<void> {
     Deno.exit(1);
   }
 
+  if (search && lang) {
+    console.error(
+      "Cannot use both --search and --lang at the same time",
+    );
+    Deno.exit(1);
+  }
+
   if (search) {
     lang = await listTemplates(confirm);
   }

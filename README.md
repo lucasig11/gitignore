@@ -2,7 +2,6 @@
 
 Small command-line utility that adds new entries to your `.gitignore`.
 
-
 ## Install
 
 ```sh

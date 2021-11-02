@@ -3,7 +3,11 @@
 import * as ink from "https://deno.land/x/ink@1.3/mod.ts";
 
 import { parseArgs, printUsage, printVersion } from "./args.ts";
-import { log } from "./util.ts";
+import {
+  addFileLogMessageFormat,
+  log,
+  skipFileLogMessageFormat,
+} from "./util.ts";
 
 export interface Options {
   verbose: boolean;
@@ -14,12 +18,6 @@ export interface Options {
 interface IgnoredFiles {
   [key: string]: boolean;
 }
-
-const addFileLogMessageFormat = (file: string) =>
-  `<green><b>Adding:</b></green> <magenta>${file}</magenta> to .gitignore`;
-
-const skipFileLogMessageFormat = (file: string) =>
-  `<yellow>Skipping:</yellow> <magenta>${file}</magenta> is already ignored`;
 
 async function main() {
   const {

@@ -1,13 +1,14 @@
 //! Small command-line utility for adding new entries to `.gitignore`.
 /// deno install --allow-read --allow-write mod.ts
 import * as ink from "https://deno.land/x/ink@1.3/mod.ts";
-import { readLines } from "https://deno.land/std/io/buffer.ts";
+import { readLines } from "https://deno.land/std@0.113.0/io/buffer.ts";
 
 interface Arguments {
   help: boolean;
   version: boolean;
   verbose: boolean;
   dryRun: boolean;
+  overwrite: boolean;
   files: string[];
 }
 
@@ -35,9 +36,10 @@ async function parseArgs(): Promise<Arguments> {
 
   return {
     help: parsedFlags["help"] || parsedFlags["h"],
-    version: parsedFlags["version"],
     verbose: parsedFlags["verbose"] || parsedFlags["v"],
-    dryRun: parsedFlags["dry-run"],
+    overwrite: parsedFlags["overwrite"] || parsedFlags["o"],
+    dryRun: parsedFlags["dry-run"] || parsedFlags["d"],
+    version: parsedFlags["version"],
     files,
   };
 }
@@ -54,7 +56,8 @@ This is free software, and you are welcome to redistribute it under the terms of
 
 <yellow>OPTIONS:</yellow>
     -v, --verbose    Prints the files that are being added/skipped.
-        --dry-run    Do not perform I/O operations.
+    -o, --overwrite  Overwrites the .gitignore file if it already exists.
+    -d, --dry-run    Do not perform I/O operations.
     -h, --help       Prints this help message.
         --version    Prints the version number.
 
@@ -109,11 +112,11 @@ async function run() {
   const encoder = new TextEncoder();
   const ignoredFiles = await getIgnoredFiles();
 
-  const skipLog: string[] = [];
+  const skipped: string[] = [];
   const dedup = args.files.filter((file) => {
     if (ignoredFiles.some((ignoredFile) => file === ignoredFile)) {
       if (args.verbose) {
-        skipLog.push(file);
+        skipped.push(file);
       }
       return false;
     }
@@ -126,39 +129,53 @@ async function run() {
   }
 
   log(
-    formatLog(dedup, (file) =>
-      `<green><b>Adding:</b></green> <magenta>${file}</magenta> to .gitignore`),
+    formatLogMsg(
+      dedup,
+      (file) =>
+        `<green><b>Adding:</b></green> <magenta>${file}</magenta> to .gitignore`,
+    ),
   );
+
   log(
-    formatLog(skipLog, (file) =>
-      `<yellow>Skipping:</yellow> <magenta>${file}</magenta> is already ignored`),
+    formatLogMsg(
+      skipped,
+      (file) =>
+        `<yellow>Skipping:</yellow> <magenta>${file}</magenta> is already ignored`,
+    ),
   );
 
-  if (DRY_RUN) {
-    Deno.exit(0);
+  if (!args.dryRun) {
+    await Deno.writeFile(
+      ".gitignore",
+      encoder.encode(dedup.join("\n") + "\n"),
+      {
+        append: !args.overwrite,
+      },
+    );
   }
-
-  await Deno.writeFile(".gitignore", encoder.encode(dedup.join("\n") + "\n"), {
-    append: true,
-  });
 
   console.log(
     ink.colorize(
-      `<green><b>Done!</b></green> Added <green>${dedup.length}</green> new entries. Skipped <yellow>${skipLog.length}</yellow>.`,
+      `<green><b>Done!</b></green> Added <green>${dedup.length}</green> new entries. Skipped <yellow>${skipped.length}</yellow>.`,
     ),
   );
 }
 
-function log(msg: string) {
+function log(message: string) {
   if (VERBOSE || DRY_RUN) {
-    console.log(msg);
+    console.log(message);
   }
 }
 
-function formatLog(log: string[], format: (file: string) => string) {
-  return log.map((file) =>
-    ink.colorize(`${DRY_RUN ? "[dry-run] " : ""}    ${format(file)}`)
-  ).join("\n");
+function formatLogMsg(
+  data: string[],
+  format: (file: string) => string,
+): string {
+  return VERBOSE || DRY_RUN
+    ? data.map((file) =>
+      ink.colorize(`${DRY_RUN ? "[dry-run]" : ""}    ${format(file)}`)
+    ).join("\n")
+    : "";
 }
 
 run();

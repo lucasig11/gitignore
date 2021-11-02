@@ -57,9 +57,8 @@ This is free software, and you are welcome to redistribute it under the terms of
     -o, --overwrite  Overwrites the .gitignore file if it already exists.
     -d, --dry-run    Do not perform I/O operations.
     -h, --help       Prints this help message.
-        --version    Prints the version number.
-
-<yellow>NOTE:</yellow> <green>gitignore</green> will not add paths that already exist in .gitignore.`,
+        --version    Prints the version number.`,
+    // <yellow>NOTE:</yellow> <green>gitignore</green> will not add paths that already exist in .gitignore.`,
   ));
 }
 

@@ -7,6 +7,8 @@ import {
   skipFileLogMessageFormat,
 } from "./util.ts";
 
+import CliError from "./error.ts";
+
 export interface Options {
   verbose: boolean;
   dryRun: boolean;
@@ -52,27 +54,23 @@ async function main(): Promise<void> {
   }
 
   if (overwrite && dryRun) {
-    console.error(
-      "Cannot use both --overwrite and --dry-run at the same time",
+    throw new CliError(
+      "cannot use both --overwrite and --dry-run at the same time",
     );
-    Deno.exit(1);
   }
 
   if (search && lang) {
-    console.error(
-      "Cannot use both --search and --lang at the same time",
+    throw new CliError(
+      "cannot use both --search and --lang at the same time",
     );
-    Deno.exit(1);
   }
 
-  if (search) {
+  if (search || lang === "list") {
     lang = await listTemplates(confirm);
   }
 
   if (entries.length == 0 && !lang) {
-    printUsage();
-    console.log(ink.colorize("\n<red><b>error:</b></red> No files specified"));
-    Deno.exit(1);
+    throw new CliError("no files specified");
   }
 
   if (lang) {
@@ -81,13 +79,11 @@ async function main(): Promise<void> {
     ).start();
     try {
       entries = entries.concat(await fetchTemplate(lang));
-    } catch (error) {
+    } catch (e) {
       spinner.fail();
-      console.error(ink.colorize(error.toString()));
-      Deno.exit(1);
-    } finally {
-      spinner.succeed();
+      throw e;
     }
+    spinner.succeed();
   }
 
   await run(entries, {
@@ -107,6 +103,12 @@ async function listTemplates(skipConfirm: boolean): Promise<string> {
       suggestions: languages,
       list: true,
       info: true,
+      validate: (input: string) => {
+        if (languages.includes(input)) {
+          return true;
+        }
+        return "Invalid language";
+      },
     },
   );
 
@@ -126,8 +128,8 @@ async function listTemplates(skipConfirm: boolean): Promise<string> {
 async function fetchTemplate(lang: string): Promise<string[]> {
   const response = await fetch(`https://www.gitignore.io/api/${lang}`);
   if (response.status != 200) {
-    throw new Error(
-      `<red>error:</red> failed to fetch a template for <yellow>${lang}</yellow>`,
+    throw new CliError(
+      `failed to fetch a template for <yellow>${lang}</yellow>`,
     );
   }
   const data = await response.text();
@@ -136,7 +138,6 @@ async function fetchTemplate(lang: string): Promise<string[]> {
 }
 
 async function run(files: string[], opts: Options): Promise<void> {
-  // Delete the old file if we are overwriting
   if (opts.overwrite) {
     try {
       await Deno.remove(".gitignore");
@@ -144,8 +145,9 @@ async function run(files: string[], opts: Options): Promise<void> {
       if (e instanceof Deno.errors.NotFound) {
         // ignore
       } else {
-        console.error("unexpected error:", e);
-        Deno.exit(1);
+        throw new CliError(
+          `failed to delete .gitignore`,
+        );
       }
     }
   }
@@ -153,8 +155,7 @@ async function run(files: string[], opts: Options): Promise<void> {
   const { added, skipped, skipCount, addCount } = await parseEntries(files);
 
   if (addCount == 0) {
-    console.log(ink.colorize("\n<yellow>No files to add</yellow>\n"));
-    Deno.exit(0);
+    throw new CliError("no files to add", 0);
   }
 
   log(added, addFileLogMessageFormat, opts);
@@ -214,9 +215,25 @@ async function getIgnoredEntries(): Promise<IgnoredFiles> {
     if (e instanceof Deno.errors.NotFound) {
       return {} as IgnoredFiles;
     }
-    console.error("unexpected error:", e);
-    Deno.exit(1);
+    throw new CliError(
+      `failed to read .gitignore`,
+    );
   }
 }
 
-main();
+try {
+  await main();
+} catch (e) {
+  if (e instanceof CliError) {
+    console.error(ink.colorize("<red>error: </red>" + e.message));
+    Deno.exit(e.exitCode);
+  } else {
+    console.error(
+      ink.colorize(
+        "<red>error:</red> an unexpected error occurred. Please file an issue at https://github.com/lucasig11/gitignore/issues",
+      ),
+      e.toString(),
+    );
+    Deno.exit(1);
+  }
+}

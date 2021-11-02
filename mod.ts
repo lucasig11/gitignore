@@ -1,6 +1,7 @@
 //! Small command-line utility for adding new entries to `.gitignore`.
 /// deno install --allow-read --allow-write mod.ts
 import * as ink from "https://deno.land/x/ink@1.3/mod.ts";
+import { wait } from "https://deno.land/x/wait@0.1.12/mod.ts";
 
 import { parseArgs, printUsage, printVersion } from "./args.ts";
 import {
@@ -15,6 +16,18 @@ export interface Options {
   overwrite: boolean;
 }
 
+export interface Entry {
+  name: string;
+  isComment: boolean;
+}
+
+interface Entries {
+  added: Entry[];
+  skipped: Entry[];
+  addCount: number;
+  skipCount: number;
+}
+
 interface IgnoredFiles {
   [key: string]: boolean;
 }
@@ -26,7 +39,8 @@ async function main() {
     dryRun,
     help,
     version,
-    files,
+    lang,
+    entries,
   } = await parseArgs();
 
   if (help) {
@@ -37,28 +51,37 @@ async function main() {
     printVersion();
     Deno.exit(0);
   }
-  if (files.length == 0) {
+
+  if (overwrite && dryRun) {
+    console.error(
+      "Cannot use both --overwrite and --dry-run at the same time",
+    );
+    Deno.exit(1);
+  }
+
+  if (entries.length == 0 && !lang) {
     printUsage();
     console.log(ink.colorize("\n<red><b>error:</b></red> No files specified"));
     Deno.exit(1);
   }
-  await run(files, {
+
+  let files = entries;
+  if (lang) {
+    const response = await fetchLanguages(lang);
+    files = files.concat(response);
+  }
+
+  const [addCount, skipCount] = await run(files, {
     verbose,
     dryRun,
     overwrite,
   });
-}
 
-export interface Entry {
-  name: string;
-  isComment: boolean;
-}
-
-interface Entries {
-  added: Entry[];
-  skipped: Entry[];
-  addCount: number;
-  skipCount: number;
+  console.log(
+    ink.colorize(
+      `<green><b>Done!</b></green> Added <green>${addCount}</green> new entries. Skipped <yellow>${skipCount}</yellow>.`,
+    ),
+  );
 }
 
 async function parseEntries(rawEntries: string[]): Promise<Entries> {
@@ -84,10 +107,48 @@ async function parseEntries(rawEntries: string[]): Promise<Entries> {
   };
 }
 
-async function run(files: string[], opts: Options) {
+async function fetchLanguages(lang: string): Promise<string[]> {
+  const spinner = wait(
+    ink.colorize(`Fetching a template for <green>${lang}</green>`),
+  )
+    .start();
+  try {
+    const response = await fetch(`https://www.gitignore.io/api/${lang}`);
+    if (response.status != 200) {
+      spinner.fail();
+      console.error(
+        ink.colorize(
+          `<red>error:</red> failed to fetch a template for <yellow>${lang}</yellow>`,
+        ),
+      );
+      Deno.exit(1);
+    }
+    const data = await response.text();
+    const lines = data.split("\n");
+    return lines.filter((line) => line.trim().length > 0);
+  } catch (error) {
+    spinner.fail();
+    console.error("Unexpected error:", error);
+    Deno.exit(1);
+  } finally {
+    spinner.succeed();
+  }
+  return [];
+}
+
+async function run(files: string[], opts: Options): Promise<[number, number]> {
   // Delete the old file if we are overwriting
   if (opts.overwrite) {
-    await Deno.remove(".gitignore");
+    try {
+      await Deno.remove(".gitignore");
+    } catch (e) {
+      if (e instanceof Deno.errors.NotFound) {
+        // ignore
+      } else {
+        console.error("unexpected error:", e);
+        Deno.exit(1);
+      }
+    }
   }
 
   const { added, skipped, skipCount, addCount } = await parseEntries(files);
@@ -109,11 +170,7 @@ async function run(files: string[], opts: Options) {
     );
   }
 
-  console.log(
-    ink.colorize(
-      `<green><b>Done!</b></green> Added <green>${addCount}</green> new entries. Skipped <yellow>${skipCount}</yellow>.`,
-    ),
-  );
+  return [addCount, skipCount];
 }
 
 // Get the list of files that are already ignored

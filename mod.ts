@@ -71,7 +71,8 @@ async function main(): Promise<void> {
   }
 
   if (entries.length == 0 && !lang) {
-    throw new CliError("no files specified");
+    printUsage();
+    Deno.exit(0);
   }
 
   if (lang) {

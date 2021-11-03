@@ -1,14 +1,5 @@
 //! Small command-line utility for adding new entries to `.gitignore`.
-import {
-  bold,
-  green,
-  Input,
-  magenta,
-  red,
-  Toggle,
-  wait,
-  yellow,
-} from "./deps.ts";
+import { bold, green, Input, red, Toggle, wait, yellow } from "./deps.ts";
 import { Arguments, parseArgs, printUsage, printVersion } from "./args.ts";
 import {
   addFileLogMessageFormat,

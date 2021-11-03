@@ -3,6 +3,7 @@ import { ink, Input, Toggle, wait } from "./deps.ts";
 import { parseArgs, printUsage, printVersion } from "./args.ts";
 import {
   addFileLogMessageFormat,
+  deleteFile,
   log,
   skipFileLogMessageFormat,
 } from "./util.ts";
@@ -139,17 +140,7 @@ async function fetchTemplate(lang: string): Promise<string[]> {
 
 async function run(files: string[], opts: Options): Promise<void> {
   if (opts.overwrite) {
-    try {
-      await Deno.remove(".gitignore");
-    } catch (e) {
-      if (e instanceof Deno.errors.NotFound) {
-        // ignore
-      } else {
-        throw new CliError(
-          `failed to delete .gitignore`,
-        );
-      }
-    }
+    await deleteFile(".gitignore", opts);
   }
 
   const { added, skipped, skipCount, addCount } = await parseEntries(files);

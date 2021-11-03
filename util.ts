@@ -1,4 +1,5 @@
 import { ink } from "./deps.ts";
+import CliError from "./error.ts";
 import { Entry, Options } from "./mod.ts";
 
 const addFileLogMessageFormat = (file: string) =>
@@ -29,4 +30,16 @@ function formatLogMsg(
   ).join("\n");
 }
 
-export { addFileLogMessageFormat, log, skipFileLogMessageFormat };
+async function deleteFile(file: string, options?: Options) {
+  try {
+    await Deno.remove(file);
+  } catch (e) {
+    if (e instanceof Deno.errors.NotFound) {
+      // ignore if it doesn't exist
+    } else {
+      throw new CliError(`failed to delete ${file}`, e);
+    }
+  }
+}
+
+export { addFileLogMessageFormat, deleteFile, log, skipFileLogMessageFormat };

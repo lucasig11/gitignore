@@ -165,8 +165,9 @@ async function run(files: string[], opts: Options): Promise<void> {
     await Deno.writeFile(
       ".gitignore",
       new TextEncoder().encode(
-        added.map((entry) => entry.name).join("\n") + "\n",
+        added.map((entry) => "\n" + entry.name).join(""),
       ),
+      { append: true },
     );
   }
 

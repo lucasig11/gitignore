@@ -1,8 +1,8 @@
-import { cache_dir as cacheDir } from "./deps.ts";
+import { getCacheDir } from "./util.ts";
 
 const cacheFolder = "/gitignore/";
 const cacheFile = "cache.json";
-const cacheFullPath = cacheDir() + cacheFolder + cacheFile;
+const cacheFullPath = getCacheDir() + cacheFolder + cacheFile;
 
 interface ICacheProvider {
   set(key: string, value: string): Promise<void>;
@@ -12,27 +12,35 @@ interface ICacheProvider {
 
 export default class Cache implements ICacheProvider {
   private cache: { [key: string]: string } = {};
+  private enabled = true;
+
   constructor() {
     try {
       const contents = Deno.readFileSync(cacheFullPath);
       this.cache = JSON.parse(new TextDecoder().decode(contents));
     } catch (e) {
       if (e instanceof Deno.errors.NotFound) {
-        Deno.mkdirSync(cacheDir() + cacheFolder, { recursive: true });
-        Deno.writeFileSync(
-          cacheFullPath,
-          new TextEncoder().encode("{}"),
-        );
+        if (getCacheDir() == null) {
+          this.enabled = false;
+        } else {
+          Deno.mkdirSync(getCacheDir() + cacheFolder, { recursive: true });
+          Deno.writeFileSync(
+            cacheFullPath,
+            new TextEncoder().encode("{}"),
+          );
+        }
       }
     }
   }
 
   public async set(key: string, value: string): Promise<void> {
     this.cache[key] = value;
-    await Deno.writeFile(
-      cacheFullPath,
-      new TextEncoder().encode(JSON.stringify(this.cache)),
-    );
+    if (this.enabled) {
+      await Deno.writeFile(
+        cacheFullPath,
+        new TextEncoder().encode(JSON.stringify(this.cache)),
+      );
+    }
   }
 
   public get(key: string): string {
@@ -45,9 +53,11 @@ export default class Cache implements ICacheProvider {
 
   public async clear(): Promise<void> {
     this.cache = {};
-    await Deno.writeFile(
-      cacheFullPath,
-      new TextEncoder().encode("{}"),
-    );
+    if (this.enabled) {
+      await Deno.writeFile(
+        cacheFullPath,
+        new TextEncoder().encode("{}"),
+      );
+    }
   }
 }

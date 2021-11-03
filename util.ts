@@ -40,4 +40,35 @@ async function deleteFile(file: string) {
   }
 }
 
-export { addFileLogMessageFormat, deleteFile, log, skipFileLogMessageFormat };
+function getCacheDir(): string | null {
+  switch (Deno.build.os) {
+    case "linux": {
+      const xdg = Deno.env.get("XDG_CACHE_HOME");
+      if (xdg) return xdg;
+
+      const home = Deno.env.get("HOME");
+      if (home) return `${home}/.cache`;
+      break;
+    }
+
+    case "darwin": {
+      const home = Deno.env.get("HOME");
+      if (home) return `${home}/Library/Caches`;
+      break;
+    }
+
+    case "windows":
+      return Deno.env.get("FOLDERID_LocalAppData") ??
+        Deno.env.get("LOCALAPPDATA") ?? null;
+  }
+
+  return null;
+}
+
+export {
+  addFileLogMessageFormat,
+  deleteFile,
+  getCacheDir,
+  log,
+  skipFileLogMessageFormat,
+};

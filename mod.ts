@@ -160,12 +160,14 @@ async function fetchTemplate(lang: string, cache: Cache): Promise<string[]> {
     }
     case 404: {
       throw new CliError(
-        `no template found for <green>${lang}</green>`,
+        `no template found for ${green(lang)}`,
       );
     }
     default: {
       throw new CliError(
-        `failed to fetch template for <green>${lang}</green>, check your connection and try again`,
+        `failed to fetch template for ${
+          green(lang)
+        }, check your connection and try again`,
       );
     }
   }
@@ -254,7 +256,7 @@ try {
   await main();
 } catch (e) {
   if (e instanceof CliError) {
-    console.error(red("<red>error: </red>" + e.message));
+    console.error(`${red("error:")} ` + e.message);
     Deno.exit(e.exitCode);
   } else {
     console.trace(

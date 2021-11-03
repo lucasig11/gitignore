@@ -1,6 +1,6 @@
 //! Small command-line utility for adding new entries to `.gitignore`.
 import { ink, Input, Toggle, wait } from "./deps.ts";
-import { parseArgs, printUsage, printVersion } from "./args.ts";
+import { Arguments, parseArgs, printUsage, printVersion } from "./args.ts";
 import {
   addFileLogMessageFormat,
   deleteFile,
@@ -9,12 +9,10 @@ import {
 } from "./util.ts";
 
 import CliError from "./error.ts";
+import Cache from "./cache.ts";
 
-export interface Options {
-  verbose: boolean;
-  dryRun: boolean;
-  overwrite: boolean;
-}
+export type Options = Pick<Arguments, "verbose" | "dryRun" | "overwrite">;
+type IgnoredFiles = Record<string, boolean>;
 
 export interface Entry {
   name: string;
@@ -26,10 +24,6 @@ interface Entries {
   skipped: Entry[];
   addCount: number;
   skipCount: number;
-}
-
-interface IgnoredFiles {
-  [key: string]: boolean;
 }
 
 async function main(): Promise<void> {
@@ -66,8 +60,10 @@ async function main(): Promise<void> {
     );
   }
 
+  const cache = new Cache();
+
   if (search || lang === "list") {
-    lang = await listTemplates(confirm);
+    lang = await listTemplates(confirm, cache);
   }
 
   if (entries.length == 0 && !lang) {
@@ -80,7 +76,8 @@ async function main(): Promise<void> {
       ink.colorize(`Fetching a template for <green>${lang}</green>`),
     ).start();
     try {
-      entries = entries.concat(await fetchTemplate(lang));
+      const template = await fetchTemplate(lang, cache);
+      entries = entries.concat(template);
     } catch (e) {
       spinner.fail();
       throw e;
@@ -95,8 +92,11 @@ async function main(): Promise<void> {
   });
 }
 
-async function listTemplates(skipConfirm: boolean): Promise<string> {
-  const templates: string[] = await fetchTemplate("list");
+async function listTemplates(
+  skipConfirm: boolean,
+  cache: Cache,
+): Promise<string> {
+  const templates: string[] = await fetchTemplate("list", cache);
   const languages: string[] = templates.flatMap((line) => line.split(","));
 
   const selected = await Input.prompt(
@@ -127,13 +127,19 @@ async function listTemplates(skipConfirm: boolean): Promise<string> {
   return selected;
 }
 
-async function fetchTemplate(lang: string): Promise<string[]> {
+async function fetchTemplate(lang: string, cache: Cache): Promise<string[]> {
+  if (cache.has(lang)) {
+    return cache.get(lang).split("\n").filter((line) => line.trim().length > 0);
+  }
+
   const response = await fetch(`https://www.gitignore.io/api/${lang}`);
   switch (response.status) {
     case 200: {
       const data = await response.text();
-      const lines = data.split("\n");
-      return lines.filter((line) => line.trim().length > 0);
+      const template = data.split("\n").filter((line) => line.trim().length > 0)
+        .slice(2, -1);
+      await cache.set(lang, template.join("\n"));
+      return template;
     }
     case 404: {
       throw new CliError(
@@ -236,7 +242,7 @@ try {
   } else {
     console.error(
       ink.colorize(
-        "<red>error:</red> an unexpected error occurred. Please file an issue at https://github.com/lucasig11/gitignore/issues",
+        "<red>error:</red> an unexpected error occurred. Please file an issue at https://github.com/lucasig11/gitignore/issues \n",
       ),
       e.toString(),
     );

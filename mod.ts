@@ -119,27 +119,37 @@ async function fetchTemplate(lang: string, cache: Cache): Promise<string[]> {
     return cache.get(lang).split("\n").filter((line) => line.trim().length > 0);
   }
 
-  const response = await fetch(`https://www.gitignore.io/api/${lang}`);
-  switch (response.status) {
-    case 200: {
-      const data = await response.text();
-      const template = data.split("\n").filter((line) => line.trim().length > 0)
-        .slice(2, -1);
-      await cache.set(lang, template.join("\n"));
-      return template;
+  try {
+    const response = await fetch(`https://www.gitignore.io/api/${lang}`);
+    switch (response.status) {
+      case 200: {
+        const data = await response.text();
+        const template = data.split("\n").filter((line) =>
+          line.trim().length > 0
+        )
+          .slice(2, -1);
+        await cache.set(lang, template.join("\n"));
+        return template;
+      }
+      case 404: {
+        throw new CliError(
+          `no template found for ${green(lang)}`,
+        );
+      }
+      default: {
+        throw new CliError(
+          `failed to fetch template for ${green(lang)}, the API returned ${
+            red(response.status.toString())
+          }`,
+        );
+      }
     }
-    case 404: {
-      throw new CliError(
-        `no template found for ${green(lang)}`,
-      );
-    }
-    default: {
-      throw new CliError(
-        `failed to fetch template for ${
-          green(lang)
-        }, check your connection and try again`,
-      );
-    }
+  } catch (_) {
+    throw new CliError(
+      `failed to fetch template for ${
+        green(lang)
+      }, check your connection and try again`,
+    );
   }
 }
 

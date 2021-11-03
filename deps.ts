@@ -9,7 +9,7 @@ export {
 } from "https://deno.land/std@0.113.0/fmt/colors.ts";
 export { readLines } from "https://deno.land/std@0.113.0/io/buffer.ts";
 export { parse } from "https://deno.land/std@0.113.0/flags/mod.ts";
-export { wait } from "https://deno.land/x/wait@0.1.12/mod.ts";
+export { TerminalSpinner } from "https://deno.land/x/spinners@v1.1.2/mod.ts";
 export { Input } from "https://deno.land/x/cliffy@v0.20.1/prompt/input.ts";
 export { Toggle } from "https://deno.land/x/cliffy@v0.20.1/prompt/toggle.ts";
 

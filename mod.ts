@@ -1,5 +1,13 @@
 //! Small command-line utility for adding new entries to `.gitignore`.
-import { bold, green, Input, red, Toggle, wait, yellow } from "./deps.ts";
+import {
+  bold,
+  green,
+  Input,
+  red,
+  TerminalSpinner,
+  Toggle,
+  yellow,
+} from "./deps.ts";
 import { Arguments, parseArgs, printUsage, printVersion } from "./args.ts";
 import {
   addFileLogMessageFormat,
@@ -83,7 +91,7 @@ async function main(): Promise<void> {
   }
 
   if (lang) {
-    const spinner = wait(
+    const spinner = new TerminalSpinner(
       `Fetching a template for ${green(lang)}`,
     ).start();
     try {
@@ -249,7 +257,7 @@ try {
     console.error(red("<red>error: </red>" + e.message));
     Deno.exit(e.exitCode);
   } else {
-    console.error(
+    console.trace(
       `${
         red("error:")
       } an unexpected error occurred. Please file an issue at https://github.com/lucasig11/gitignore/issues \n`,

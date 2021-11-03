@@ -151,5 +151,5 @@ ${yellow("EXAMPLES:")}
 }
 
 export function printVersion() {
-  console.log("v0.2.0");
+  console.log("v0.2.1");
 }

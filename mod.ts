@@ -8,7 +8,7 @@ import {
   Toggle,
   yellow,
 } from "./deps.ts";
-import { Arguments, parseArgs, printUsage, printVersion } from "./args.ts";
+import { Arguments, parseArgs } from "./args.ts";
 import {
   addFileLogMessageFormat,
   deleteFile,
@@ -40,36 +40,11 @@ async function main(): Promise<void> {
     confirm,
     dryRun,
     entries,
-    help,
     lang,
     overwrite,
     search,
-    version,
     verbose,
   } = await parseArgs();
-
-  if (help) {
-    printUsage();
-    Deno.exit(0);
-  }
-
-  if (version) {
-    printVersion();
-    Deno.exit(0);
-  }
-
-  if (overwrite && dryRun) {
-    throw new CliError(
-      "cannot use both --overwrite and --dry-run at the same time",
-    );
-  }
-
-  if (search && lang) {
-    throw new CliError(
-      "cannot use both --search and --lang at the same time",
-    );
-  }
-
   const cache = new Cache();
 
   if (clearCache) {
@@ -83,11 +58,6 @@ async function main(): Promise<void> {
 
   if (search || lang === "list") {
     lang = await listTemplates(confirm, cache);
-  }
-
-  if (entries.length == 0 && !lang) {
-    printUsage();
-    Deno.exit(0);
   }
 
   if (lang) {

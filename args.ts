@@ -7,6 +7,7 @@ import {
   underline,
   yellow,
 } from "./deps.ts";
+import CliError from "./error.ts";
 
 export interface Arguments {
   clearCache: boolean;
@@ -25,13 +26,22 @@ export interface Flags {
   [key: string]: boolean;
 }
 
-export async function parseArgs(): Promise<Arguments> {
+export async function parseArgs(): Promise<
+  Omit<Arguments, "help" | "version">
+> {
   const piped: string[] = [];
 
   if (!Deno.isatty(Deno.stdin.rid)) {
     for await (const line of readLines(Deno.stdin)) {
       line && piped.push(line);
     }
+  }
+
+  const args = [...piped, ...Deno.args];
+
+  if (args.length == 0) {
+    printUsage();
+    Deno.exit(0);
   }
 
   const {
@@ -46,10 +56,7 @@ export async function parseArgs(): Promise<Arguments> {
     _: entries,
     overwrite,
   } = parse(
-    [
-      ...piped,
-      ...Deno.args,
-    ],
+    args,
     {
       boolean: [
         "clear-cache",
@@ -75,16 +82,37 @@ export async function parseArgs(): Promise<Arguments> {
       },
     },
   );
+
+  if (help) {
+    printUsage();
+    Deno.exit(0);
+  }
+
+  if (version) {
+    printVersion();
+    Deno.exit(0);
+  }
+
+  if (overwrite && dryRun) {
+    throw new CliError(
+      "cannot use both --overwrite and --dry-run at the same time",
+    );
+  }
+
+  if (search && lang) {
+    throw new CliError(
+      "cannot use both --search and --lang at the same time",
+    );
+  }
+
   return {
     clearCache,
     confirm,
     dryRun,
     entries: entries.map((entry) => entry.toString()),
-    help,
     lang,
     overwrite,
     search,
-    version,
     verbose,
   };
 }

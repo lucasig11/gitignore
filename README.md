@@ -5,8 +5,18 @@
 </p>
 
 <p align="center">
-<img src=https://user-images.githubusercontent.com/72674879/139859742-215a613a-0d0d-4d22-ac04-5a595124fd61.gif alt="demo"></img>
+<img src=https://user-images.githubusercontent.com/72674879/139859742-215a613a-0d0d-4d22-ac04-5a595124fd61.gif alt="using the search feature"></img>
 </p>
+
+## Requirements
+
+- [Deno](https://deno.land)
+
+## Compatibility
+
+- ✅ Linux
+- ✅ Windows
+- ❌ MacOS (not tested)
 
 ## Install
 
@@ -22,6 +32,9 @@ gitignore node_modules/ "*.out" "*.o"
 
 # list available languages/frameworks
 gitignore -s
+
+# or just get the template for a language
+gitignore -l rust
 
 # supports pipes
 curl -fLw '\n' https://www.gitignore.io/api/node | gitignore -v

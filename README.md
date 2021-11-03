@@ -11,7 +11,7 @@
 ## Install
 
 ```sh
-deno install --unstable --allow-net --allow-read --allow-write https://deno.land/x/gitignore/mod.ts
+deno install --unstable --allow-env --allow-net --allow-read --allow-write https://deno.land/x/gitignore/mod.ts
 ```
 
 ## Usage

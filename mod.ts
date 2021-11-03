@@ -128,14 +128,23 @@ async function listTemplates(skipConfirm: boolean): Promise<string> {
 
 async function fetchTemplate(lang: string): Promise<string[]> {
   const response = await fetch(`https://www.gitignore.io/api/${lang}`);
-  if (response.status != 200) {
-    throw new CliError(
-      `failed to fetch a template for <yellow>${lang}</yellow>`,
-    );
+  switch (response.status) {
+    case 200: {
+      const data = await response.text();
+      const lines = data.split("\n");
+      return lines.filter((line) => line.trim().length > 0);
+    }
+    case 404: {
+      throw new CliError(
+        `no template found for <green>${lang}</green>`,
+      );
+    }
+    default: {
+      throw new CliError(
+        `failed to fetch template for <green>${lang}</green>, check your connection and try again`,
+      );
+    }
   }
-  const data = await response.text();
-  const lines = data.split("\n");
-  return lines.filter((line) => line.trim().length > 0);
 }
 
 async function run(files: string[], opts: Options): Promise<void> {
@@ -144,10 +153,6 @@ async function run(files: string[], opts: Options): Promise<void> {
   }
 
   const { added, skipped, skipCount, addCount } = await parseEntries(files);
-
-  if (addCount == 0) {
-    throw new CliError("no files to add", 0);
-  }
 
   log(added, addFileLogMessageFormat, opts);
   log(skipped, skipFileLogMessageFormat, opts);

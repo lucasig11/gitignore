@@ -83,7 +83,8 @@ export function printUsage() {
     `Small command-line utility for adding new entries to .gitignore.
 This is free software, and you are welcome to redistribute it under the terms of the GPLv3 license.
 
-<yellow>USAGE:    </yellow><green>gitignore</green> <yellow>[FLAGS] [OPTIONS] <FILES></yellow>...
+<yellow>USAGE:</yellow>
+    $ <green>gitignore</green> <yellow>[FLAGS] [OPTIONS] <FILES></yellow>...
 
 <yellow>OPTIONS:</yellow>
     -l,  --lang=<STRING>    Language/framework to fetch a template for. Ex: react, python, ruby, etc.
@@ -97,13 +98,14 @@ This is free software, and you are welcome to redistribute it under the terms of
     -h,  --help             Prints this help message.
     -V   --version          Prints the version number.
 
-<yellow>EXAMPLES:  </yellow><green>gitignore</green> <magenta><u>node_modules/</u></magenta> <yellow>\"*.out\"</yellow>
-           <green>gitignore</green> <cyan>--lang=node</cyan> <yellow>\"*.out\"</yellow>
-           <green>curl</green> <cyan>-fLw</cyan> <yellow>'\\n'</yellow> https://www.gitignore.io/api/node | <green>gitignore</green> <cyan>-v</cyan>
+<yellow>EXAMPLES:</yellow>
+    $ <green>gitignore</green> <magenta><u>node_modules/</u></magenta> <yellow>\"*.out\"</yellow>
+    $ <green>gitignore</green> <cyan>--lang=node</cyan> <yellow>\"*.out\"</yellow>
+    $ <green>curl</green> <cyan>-fLw</cyan> <yellow>'\\n'</yellow> https://www.gitignore.io/api/node | <green>gitignore</green> <cyan>-v</cyan>
 `,
   ));
 }
 
 export function printVersion() {
-  console.log("v0.1.0");
+  console.log("v0.1.4");
 }

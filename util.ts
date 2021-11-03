@@ -30,7 +30,7 @@ function formatLogMsg(
   ).join("\n");
 }
 
-async function deleteFile(file: string, options?: Options) {
+async function deleteFile(file: string) {
   try {
     await Deno.remove(file);
   } catch (e) {

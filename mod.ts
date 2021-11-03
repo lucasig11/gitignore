@@ -150,7 +150,7 @@ async function fetchTemplate(lang: string): Promise<string[]> {
 
 async function run(files: string[], opts: Options): Promise<void> {
   if (opts.overwrite) {
-    await deleteFile(".gitignore", opts);
+    await deleteFile(".gitignore");
   }
 
   const { added, skipped, skipCount, addCount } = await parseEntries(files);

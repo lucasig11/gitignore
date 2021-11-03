@@ -158,10 +158,11 @@ async function run(files: string[], opts: Options): Promise<void> {
   log(skipped, skipFileLogMessageFormat, opts);
 
   if (!opts.dryRun) {
+    const content = added.map((entry) => entry.name);
     await Deno.writeFile(
       ".gitignore",
       new TextEncoder().encode(
-        added.map((entry) => "\n" + entry.name).join(""),
+        content.join("\n") + (content.length > 0 ? "\n" : ""),
       ),
       { append: true },
     );

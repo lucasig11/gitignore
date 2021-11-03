@@ -98,7 +98,9 @@ This is free software, and you are welcome to redistribute it under the terms of
     -V   --version          Prints the version number.
 
 <yellow>EXAMPLES:  </yellow><green>gitignore</green> <magenta><u>node_modules/</u></magenta> <yellow>\"*.out\"</yellow>
-           <green>curl</green> <cyan>-fLw</cyan> <yellow>'\\n'</yellow> https://www.gitignore.io/api/node | <green>gitignore</green> <cyan>-v</cyan>`,
+           <green>gitignore</green> <cyan>--lang=node</cyan> <yellow>\"*.out\"</yellow>
+           <green>curl</green> <cyan>-fLw</cyan> <yellow>'\\n'</yellow> https://www.gitignore.io/api/node | <green>gitignore</green> <cyan>-v</cyan>
+`,
   ));
 }
 

@@ -94,7 +94,7 @@ This is free software, and you are welcome to redistribute it under the terms of
     -d,  --dry-run          Do not perform I/O operations.
     -o,  --overwrite        Overwrites the .gitignore file if it already exists.
     -v,  --verbose          Prints the files that are being added/skipped.
-    -s   --search           Lists the available templates and lets you pick one.
+    -s   --search           Interactively search through the available templates.
     -h,  --help             Prints this help message.
     -V   --version          Prints the version number.
 

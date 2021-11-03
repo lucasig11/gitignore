@@ -28,21 +28,23 @@ interface Entries {
 
 async function main(): Promise<void> {
   let {
-    verbose,
-    overwrite,
-    dryRun,
-    help,
-    version,
+    clearCache,
     confirm,
-    lang,
-    search,
+    dryRun,
     entries,
+    help,
+    lang,
+    overwrite,
+    search,
+    version,
+    verbose,
   } = await parseArgs();
 
   if (help) {
     printUsage();
     Deno.exit(0);
   }
+
   if (version) {
     printVersion();
     Deno.exit(0);
@@ -61,6 +63,19 @@ async function main(): Promise<void> {
   }
 
   const cache = new Cache();
+
+  if (clearCache) {
+    console.log(ink.colorize("<yellow>Clearing cache...</yellow>"));
+    await cache.clear();
+    if (!search && !lang && entries.length <= 0) {
+      console.log(
+        ink.colorize(
+          "<yellow>Cache cleared. No entries to add.</yellow>",
+        ),
+      );
+      Deno.exit(0);
+    }
+  }
 
   if (search || lang === "list") {
     lang = await listTemplates(confirm, cache);

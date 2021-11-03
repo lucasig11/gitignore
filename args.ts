@@ -1,6 +1,7 @@
 import { ink, parse, readLines } from "./deps.ts";
 
 export interface Arguments {
+  clearCache: boolean;
   confirm: boolean;
   dryRun: boolean;
   entries: string[];
@@ -26,6 +27,7 @@ export async function parseArgs(): Promise<Arguments> {
   }
 
   const {
+    "clear-cache": clearCache,
     confirm,
     dryRun,
     help,
@@ -42,6 +44,7 @@ export async function parseArgs(): Promise<Arguments> {
     ],
     {
       boolean: [
+        "clear-cache",
         "confirm",
         "help",
         "search",
@@ -52,6 +55,7 @@ export async function parseArgs(): Promise<Arguments> {
       ],
       string: ["lang"],
       alias: {
+        c: "clear-cache",
         d: "dryRun",
         h: "help",
         l: "lang",
@@ -63,8 +67,8 @@ export async function parseArgs(): Promise<Arguments> {
       },
     },
   );
-
   return {
+    clearCache,
     confirm,
     dryRun,
     entries: entries.map((entry) => entry.toString()),
@@ -90,6 +94,7 @@ This is free software, and you are welcome to redistribute it under the terms of
     -l,  --lang=<STRING>    Language/framework to fetch a template for. Ex: react, python, ruby, etc.
 
 <yellow>FLAGS:</yellow>
+    -c,  --clear-cache      Clear the cache before fetching the template.
     -y,  --confirm          Skip confirmation prompt.
     -d,  --dry-run          Do not perform I/O operations.
     -o,  --overwrite        Overwrites the .gitignore file if it already exists.
@@ -107,5 +112,5 @@ This is free software, and you are welcome to redistribute it under the terms of
 }
 
 export function printVersion() {
-  console.log("v0.1.4");
+  console.log("v0.2.0");
 }

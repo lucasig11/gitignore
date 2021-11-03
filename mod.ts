@@ -177,17 +177,23 @@ async function run(files: string[], opts: Options): Promise<void> {
 async function parseEntries(rawEntries: string[]): Promise<Entries> {
   const ignoredEntries = await getIgnoredEntries();
 
-  const skipped: Entry[] = rawEntries.filter((entry) => ignoredEntries[entry])
-    .map((entry) => ({
-      name: entry,
-      isComment: entry.startsWith("#"),
-    }));
+  // Map strings to Entry objects
+  const entries = rawEntries.map((entry) => ({
+    name: entry,
+    isComment: entry.startsWith("#"),
+  }));
 
-  const added: Entry[] = rawEntries.filter((entry) => !ignoredEntries[entry])
-    .map((entry) => ({
-      name: entry,
-      isComment: entry.startsWith("#"),
-    }));
+  const [skipped, added]: [Entry[], Entry[]] = entries.reduce(
+    (acc, entry) => {
+      if (ignoredEntries[entry.name]) {
+        acc[0].push(entry);
+      } else {
+        acc[1].push(entry);
+      }
+      return acc;
+    },
+    [[], []] as [Entry[], Entry[]],
+  );
 
   return {
     added,
@@ -202,6 +208,7 @@ async function getIgnoredEntries(): Promise<IgnoredFiles> {
   try {
     const content = await Deno.readFile(".gitignore");
     const lines = new TextDecoder().decode(content).split("\n");
+    // Trim trailing new lines and map the entries to IgnoredFiles object
     return lines.reduce((acc, line) => {
       if (line.trim().length > 0) {
         acc[line] = true;

@@ -1,4 +1,12 @@
-import { ink, parse, readLines } from "./deps.ts";
+import {
+  cyan,
+  green,
+  magenta,
+  parse,
+  readLines,
+  underline,
+  yellow,
+} from "./deps.ts";
 
 export interface Arguments {
   clearCache: boolean;
@@ -83,17 +91,17 @@ export async function parseArgs(): Promise<Arguments> {
 
 export function printUsage() {
   printVersion();
-  console.log(ink.colorize(
+  console.log(
     `Small command-line utility for adding new entries to .gitignore.
 This is free software, and you are welcome to redistribute it under the terms of the GPLv3 license.
 
-<yellow>USAGE:</yellow>
-    $ <green>gitignore</green> <yellow>[FLAGS] [OPTIONS] <FILES></yellow>...
+${yellow("USAGE:")}
+    $ ${green("gitignore")} ${yellow("[FLAGS] [OPTIONS] <FILES>")}...
 
-<yellow>OPTIONS:</yellow>
+${yellow("OPTIONS:")}
     -l,  --lang=<STRING>    Language/framework to fetch a template for. Ex: react, python, ruby, etc.
 
-<yellow>FLAGS:</yellow>
+${yellow("FLAGS:")}
     -c,  --clear-cache      Clear the cache before fetching the template.
     -y,  --confirm          Skip confirmation prompt.
     -d,  --dry-run          Do not perform I/O operations.
@@ -103,12 +111,15 @@ This is free software, and you are welcome to redistribute it under the terms of
     -h,  --help             Prints this help message.
     -V   --version          Prints the version number.
 
-<yellow>EXAMPLES:</yellow>
-    $ <green>gitignore</green> <magenta><u>node_modules/</u></magenta> <yellow>\"*.out\"</yellow>
-    $ <green>gitignore</green> <cyan>--lang=node</cyan> <yellow>\"*.out\"</yellow>
-    $ <green>curl</green> <cyan>-fLw</cyan> <yellow>'\\n'</yellow> https://www.gitignore.io/api/node | <green>gitignore</green> <cyan>-v</cyan>
-`,
-  ));
+${yellow("EXAMPLES:")}
+    $ ${green("gitignore")} ${magenta(underline("node_modules/"))} ${
+      yellow('"*.out"')
+    }
+    $ ${green("gitignore")} ${cyan("--lang=node")} ${yellow('"*.out"')}
+    $ ${green("curl")} ${cyan("-fLw")} ${
+      yellow('"\\n"')
+    } https://www.gitignore.io/api/node | ${green("gitignore")} ${cyan("-v")} `,
+  );
 }
 
 export function printVersion() {

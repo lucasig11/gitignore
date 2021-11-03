@@ -1,12 +1,12 @@
-import { ink } from "./deps.ts";
+import { bold, green, magenta, yellow } from "./deps.ts";
 import CliError from "./error.ts";
 import { Entry, Options } from "./mod.ts";
 
 const addFileLogMessageFormat = (file: string) =>
-  `<green><b>Adding:</b></green> <magenta>${file}</magenta> to .gitignore`;
+  `${green(bold("Adding:"))} ${magenta(file)} to .gitignore`;
 
 const skipFileLogMessageFormat = (file: string) =>
-  `<yellow>Skipping:</yellow> <magenta>${file}</magenta> is already ignored`;
+  `${yellow(bold("Skipping:"))} ${magenta(file)} is already ignored`;
 
 function log(
   data: Entry[],
@@ -24,9 +24,7 @@ function formatLogMsg(
   options?: Options,
 ): string {
   return data.filter((entry) => !entry.isComment).map((entry) =>
-    ink.colorize(
-      `${options?.dryRun ? "[dry-run]" : ""}    ${format(entry.name)}`,
-    )
+    `${options?.dryRun ? "[dry-run]" : ""}    ${format(entry.name)}`
   ).join("\n");
 }
 

@@ -1,5 +1,14 @@
 //! Small command-line utility for adding new entries to `.gitignore`.
-import { ink, Input, Toggle, wait } from "./deps.ts";
+import {
+  bold,
+  green,
+  Input,
+  magenta,
+  red,
+  Toggle,
+  wait,
+  yellow,
+} from "./deps.ts";
 import { Arguments, parseArgs, printUsage, printVersion } from "./args.ts";
 import {
   addFileLogMessageFormat,
@@ -65,14 +74,10 @@ async function main(): Promise<void> {
   const cache = new Cache();
 
   if (clearCache) {
-    console.log(ink.colorize("<yellow>Clearing cache...</yellow>"));
+    console.log(yellow("Clearing cache..."));
     await cache.clear();
     if (!search && !lang && entries.length <= 0) {
-      console.log(
-        ink.colorize(
-          "<yellow>Cache cleared. No entries to add.</yellow>",
-        ),
-      );
+      console.log(yellow("Cache cleared. No entries to add."));
       Deno.exit(0);
     }
   }
@@ -88,7 +93,7 @@ async function main(): Promise<void> {
 
   if (lang) {
     const spinner = wait(
-      ink.colorize(`Fetching a template for <green>${lang}</green>`),
+      `Fetching a template for ${green(lang)}`,
     ).start();
     try {
       const template = await fetchTemplate(lang, cache);
@@ -130,9 +135,7 @@ async function listTemplates(
   );
 
   const confirm: boolean = skipConfirm || await Toggle.prompt(
-    ink.colorize(
-      `Would you like to use the <green>${selected}</green> template?`,
-    ),
+    `Would you like to use the ${green(selected)} template?`,
   );
 
   if (!confirm) {
@@ -191,9 +194,9 @@ async function run(files: string[], opts: Options): Promise<void> {
   }
 
   console.log(
-    ink.colorize(
-      `<green><b>Done!</b></green> Added <green>${addCount}</green> new entries. Skipped <yellow>${skipCount}</yellow>.`,
-    ),
+    `${green(bold("Done!"))} Added ${
+      green(addCount.toString())
+    } new entries. Skipped ${yellow(skipCount.toString())}.`,
   );
 }
 
@@ -252,13 +255,13 @@ try {
   await main();
 } catch (e) {
   if (e instanceof CliError) {
-    console.error(ink.colorize("<red>error: </red>" + e.message));
+    console.error(red("<red>error: </red>" + e.message));
     Deno.exit(e.exitCode);
   } else {
     console.error(
-      ink.colorize(
-        "<red>error:</red> an unexpected error occurred. Please file an issue at https://github.com/lucasig11/gitignore/issues \n",
-      ),
+      `${
+        red("error:")
+      } an unexpected error occurred. Please file an issue at https://github.com/lucasig11/gitignore/issues \n`,
       e.toString(),
     );
     Deno.exit(1);

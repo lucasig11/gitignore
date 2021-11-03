@@ -1,4 +1,12 @@
-export * as ink from "https://deno.land/x/ink@1.3/mod.ts";
+export {
+  bold,
+  cyan,
+  green,
+  magenta,
+  red,
+  underline,
+  yellow,
+} from "https://deno.land/std@0.113.0/fmt/colors.ts";
 export { readLines } from "https://deno.land/std@0.113.0/io/buffer.ts";
 export { parse } from "https://deno.land/std@0.113.0/flags/mod.ts";
 export { wait } from "https://deno.land/x/wait@0.1.12/mod.ts";

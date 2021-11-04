@@ -1,13 +1,14 @@
-import Cli from "./src/cli.ts";
+import GitIgnoreCli from "./src/cli.ts";
 import CliError from "./src/error.ts";
 import { parseArgs } from "./src/args.ts";
-import { red } from "./src/deps.ts";
+import { container, red } from "./src/deps.ts";
 
-const args = await parseArgs();
-const cli = new Cli(args);
+import "./src/container/mod.ts";
 
 try {
-  await cli.run();
+  const args = await parseArgs();
+  const cli = container.resolve(GitIgnoreCli);
+  await cli.run(args);
 } catch (e) {
   if (e instanceof CliError) {
     console.error(`${red("error:")} ` + e.message);

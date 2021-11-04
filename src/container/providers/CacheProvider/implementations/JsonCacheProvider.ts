@@ -1,20 +1,16 @@
-import { getCacheDir } from "./util.ts";
+import ICacheProvider from "../models/ICacheProvider.ts";
+import { getCacheDir } from "../../../../util.ts";
 
 const cacheFolder = "/gitignore/";
 const cacheFile = "cache.json";
 const cacheFullPath = getCacheDir() + cacheFolder + cacheFile;
 
-interface ICacheProvider {
-  set(key: string, value: string): Promise<void>;
-  get(key: string): string;
-  clear(): Promise<void>;
-}
-
-export default class Cache implements ICacheProvider {
+export default class JsonCacheProvider implements ICacheProvider {
   private cache: { [key: string]: string } = {};
   private enabled = true;
 
   constructor() {
+    console.log("[JsonCacheProvider] Loading cache...");
     try {
       const contents = Deno.readFileSync(cacheFullPath);
       this.cache = JSON.parse(new TextDecoder().decode(contents));

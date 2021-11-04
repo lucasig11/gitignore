@@ -1,7 +1,7 @@
-import Cli from "./cli.ts";
-import CliError from "./error.ts";
-import { parseArgs } from "./args.ts";
-import { red } from "./deps.ts";
+import Cli from "./src/cli.ts";
+import CliError from "./src/error.ts";
+import { parseArgs } from "./src/args.ts";
+import { red } from "./src/deps.ts";
 
 const args = await parseArgs();
 const cli = new Cli(args);

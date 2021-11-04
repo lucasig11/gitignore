@@ -87,6 +87,12 @@ export async function parseArgs(): Promise<Arguments> {
     Deno.exit(0);
   }
 
+  if (lang.length <= 0) {
+    throw new CliError(
+      "you must specify a language when using the -l/--lang flag.",
+    );
+  }
+
   if (overwrite && dryRun) {
     throw new CliError(
       "cannot use both --overwrite and --dry-run at the same time",

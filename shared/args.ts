@@ -6,7 +6,7 @@ import {
   readLines,
   underline,
   yellow,
-} from "./deps.ts";
+} from "../deps.ts";
 import CliError from "./error.ts";
 
 export interface Arguments {
@@ -22,13 +22,7 @@ export interface Arguments {
   verbose: boolean;
 }
 
-export interface Flags {
-  [key: string]: boolean;
-}
-
-export async function parseArgs(): Promise<
-  Omit<Arguments, "help" | "version">
-> {
+export async function parseArgs(): Promise<Arguments> {
   const piped: string[] = [];
 
   if (!Deno.isatty(Deno.stdin.rid)) {
@@ -93,6 +87,12 @@ export async function parseArgs(): Promise<
     Deno.exit(0);
   }
 
+  if (lang?.length <= 0) {
+    throw new CliError(
+      "you must specify a language when using the -l/--lang flag.",
+    );
+  }
+
   if (overwrite && dryRun) {
     throw new CliError(
       "cannot use both --overwrite and --dry-run at the same time",
@@ -114,6 +114,8 @@ export async function parseArgs(): Promise<
     overwrite,
     search,
     verbose,
+    help,
+    version,
   };
 }
 
@@ -124,7 +126,7 @@ export function printUsage() {
 This is free software, and you are welcome to redistribute it under the terms of the GPLv3 license.
 
 ${yellow("USAGE:")}
-    $ ${green("gitignore")} ${yellow("[FLAGS] [OPTIONS] <FILES>")}...
+    $ ${green("gitignore")} ${yellow("[FLAGS] [OPTIONS] [FILES]")}...
 
 ${yellow("OPTIONS:")}
     -l,  --lang=<STRING>    Language/framework to fetch a template for. Ex: react, python, ruby, etc.
@@ -134,10 +136,13 @@ ${yellow("FLAGS:")}
     -y,  --confirm          Skip confirmation prompt.
     -d,  --dry-run          Do not perform I/O operations.
     -o,  --overwrite        Overwrites the .gitignore file if it already exists.
-    -v,  --verbose          Prints the files that are being added/skipped.
     -s   --search           Interactively search through the available templates.
+    -v,  --verbose          Prints the files that are being added/skipped.
     -h,  --help             Prints this help message.
     -V   --version          Prints the version number.
+
+${yellow("ARGS:")}
+    FILES                   Files to add to .gitignore.
 
 ${yellow("EXAMPLES:")}
     $ ${green("gitignore")} ${magenta(underline("node_modules/"))} ${
@@ -151,5 +156,5 @@ ${yellow("EXAMPLES:")}
 }
 
 export function printVersion() {
-  console.log("v0.2.1");
+  console.log("v0.2.2");
 }

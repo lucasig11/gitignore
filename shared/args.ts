@@ -126,7 +126,7 @@ export function printUsage() {
 This is free software, and you are welcome to redistribute it under the terms of the GPLv3 license.
 
 ${yellow("USAGE:")}
-    $ ${green("gitignore")} ${yellow("[FLAGS] [OPTIONS] <FILES>")}...
+    $ ${green("gitignore")} ${yellow("[FLAGS] [OPTIONS] [FILES]")}...
 
 ${yellow("OPTIONS:")}
     -l,  --lang=<STRING>    Language/framework to fetch a template for. Ex: react, python, ruby, etc.
@@ -140,6 +140,9 @@ ${yellow("FLAGS:")}
     -s   --search           Interactively search through the available templates.
     -h,  --help             Prints this help message.
     -V   --version          Prints the version number.
+ 
+${yellow("ARGS:")}
+    FILES                   Files to add to .gitignore.
 
 ${yellow("EXAMPLES:")}
     $ ${green("gitignore")} ${magenta(underline("node_modules/"))} ${

@@ -1,9 +1,9 @@
-import GitIgnoreCli from "./src/cli.ts";
-import CliError from "./src/error.ts";
-import { parseArgs } from "./src/args.ts";
-import { container, red } from "./src/deps.ts";
+import GitIgnoreCli from "./cli.ts";
+import CliError from "./shared/error.ts";
+import { parseArgs } from "./shared/args.ts";
+import { container, red } from "./deps.ts";
 
-import "./src/container/mod.ts";
+import "./shared/container/mod.ts";
 
 try {
   const args = await parseArgs();

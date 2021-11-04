@@ -1,4 +1,4 @@
-import { green, Inject, Injectable, Input, red } from "../../../../deps.ts";
+import { green, Inject, Injectable, Input, red } from "../../../../../deps.ts";
 import CliError from "../../../../error.ts";
 import ITemplateProvider from "../models/ITemplateProvider.ts";
 import ICacheProvider from "../../CacheProvider/models/ICacheProvider.ts";

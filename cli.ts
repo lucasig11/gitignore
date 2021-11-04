@@ -13,10 +13,10 @@ import {
   logEntries,
   parseEntries,
   skipFileLogMessageFormat,
-} from "./util.ts";
-import { Arguments } from "./args.ts";
-import ICacheProvider from "./container/providers/CacheProvider/models/ICacheProvider.ts";
-import ITemplateProvider from "./container/providers/TemplateProvider/models/ITemplateProvider.ts";
+} from "./shared/util.ts";
+import { Arguments } from "./shared/args.ts";
+import ICacheProvider from "./shared/container/providers/CacheProvider/models/ICacheProvider.ts";
+import ITemplateProvider from "./shared/container/providers/TemplateProvider/models/ITemplateProvider.ts";
 
 @Injectable()
 export default class GitIgnoreCli {

@@ -6,7 +6,7 @@ import {
   readLines,
   underline,
   yellow,
-} from "./deps.ts";
+} from "../deps.ts";
 import CliError from "./error.ts";
 
 export interface Arguments {

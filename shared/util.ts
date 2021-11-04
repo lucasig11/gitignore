@@ -1,4 +1,4 @@
-import { bold, green, magenta, yellow } from "./deps.ts";
+import { bold, green, magenta, yellow } from "../deps.ts";
 import CliError from "./error.ts";
 import { Arguments } from "./args.ts";
 

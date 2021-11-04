@@ -17,7 +17,7 @@ function logEntries(
   options?: Options,
 ) {
   if (options?.verbose || options?.dryRun) {
-    log(formatLogMsg(data, format, options.dryRun), options.verbose);
+    log(formatLogMsg(data, format, options.dryRun), true);
   }
 }
 

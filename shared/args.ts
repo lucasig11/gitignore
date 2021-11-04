@@ -136,11 +136,11 @@ ${yellow("FLAGS:")}
     -y,  --confirm          Skip confirmation prompt.
     -d,  --dry-run          Do not perform I/O operations.
     -o,  --overwrite        Overwrites the .gitignore file if it already exists.
-    -v,  --verbose          Prints the files that are being added/skipped.
     -s   --search           Interactively search through the available templates.
+    -v,  --verbose          Prints the files that are being added/skipped.
     -h,  --help             Prints this help message.
     -V   --version          Prints the version number.
- 
+
 ${yellow("ARGS:")}
     FILES                   Files to add to .gitignore.
 

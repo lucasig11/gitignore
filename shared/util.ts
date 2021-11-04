@@ -86,8 +86,11 @@ interface Entries {
   skipCount: number;
 }
 
-async function parseEntries(rawEntries: string[]): Promise<Entries> {
-  const ignoredEntries = await getIgnoredEntries();
+async function parseEntries(
+  rawEntries: string[],
+  overwrite: boolean,
+): Promise<Entries> {
+  const ignoredEntries = overwrite ? {} : await getIgnoredEntries();
 
   // Map strings to Entry objects
   const entries = rawEntries.map((entry) => ({

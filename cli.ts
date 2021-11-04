@@ -8,7 +8,6 @@ import {
 } from "./deps.ts";
 import {
   addFileLogMessageFormat,
-  deleteFile,
   log,
   logEntries,
   parseEntries,
@@ -70,11 +69,10 @@ export default class GitIgnoreCli {
   }
 
   private async addIgnoredEntries(files: string[]): Promise<void> {
-    if (this.args.overwrite) {
-      await deleteFile(".gitignore");
-    }
-
-    const { added, skipped, skipCount, addCount } = await parseEntries(files);
+    const { added, skipped, skipCount, addCount } = await parseEntries(
+      files,
+      this.args.overwrite,
+    );
 
     logEntries(added, addFileLogMessageFormat, this.args);
     logEntries(skipped, skipFileLogMessageFormat, this.args);
@@ -86,7 +84,7 @@ export default class GitIgnoreCli {
         new TextEncoder().encode(
           content.join("\n") + (content.length > 0 ? "\n" : ""),
         ),
-        { append: true },
+        { append: !this.args.overwrite },
       );
     }
 

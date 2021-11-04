@@ -10,7 +10,6 @@ export default class JsonCacheProvider implements ICacheProvider {
   private enabled = true;
 
   constructor() {
-    console.log("[JsonCacheProvider] Loading cache...");
     try {
       const contents = Deno.readFileSync(cacheFullPath);
       this.cache = JSON.parse(new TextDecoder().decode(contents));

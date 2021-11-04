@@ -1,4 +1,4 @@
-import { container } from "../deps.ts";
+import { container } from "../../deps.ts";
 
 import JsonCacheProvider from "./providers/CacheProvider/implementations/JsonCacheProvider.ts";
 import ICacheProvider from "./providers/CacheProvider/models/ICacheProvider.ts";

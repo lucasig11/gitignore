@@ -14,11 +14,11 @@ try {
     console.error(`${red("error:")} ` + e.message);
     Deno.exit(e.exitCode);
   } else {
-    console.trace(
+    console.error(
       `${
         red("error:")
       } an unexpected error occurred. Please file an issue at https://github.com/lucasig11/gitignore/issues \n`,
-      e.toString(),
+      red(e.toString()),
     );
     Deno.exit(1);
   }

@@ -1,40 +1,63 @@
-import { bold, green, magenta, yellow } from "../deps.ts";
+import { writeAllSync } from "../deps.ts";
 import CliError from "./error.ts";
-import { Arguments } from "./args.ts";
 
-type Options = Pick<Arguments, "verbose" | "dryRun" | "overwrite">;
-type IgnoredFiles = Record<string, boolean>;
+interface Options {
+  verbose: boolean;
+  dryRun: boolean;
+  overwrite: boolean;
+}
 
-const addFileLogMessageFormat = (file: string) =>
-  `${green(bold("Adding:"))} ${magenta(file)} to .gitignore`;
+interface Data {
+  name: string;
+  isComment: boolean;
+}
 
-const skipFileLogMessageFormat = (file: string) =>
-  `${yellow(bold("Skipping:"))} ${magenta(file)} is already ignored`;
+class Writer {
+  public static writeAllSync(writer: Deno.WriterSync, message: string): void {
+    const encoder = new TextEncoder();
+    writeAllSync(writer, encoder.encode(message));
+  }
+
+  public static writeTextFileSync(
+    filename: string,
+    content: string,
+    options?: { append: boolean },
+  ) {
+    const writer = Deno.openSync(filename, {
+      write: true,
+      append: options?.append,
+      create: true,
+    });
+    Writer.writeAllSync(writer, content);
+    writer.close();
+  }
+}
 
 function logEntries(
-  data: Entry[],
+  data: Data[],
   format: (file: string) => string,
   options?: Options,
 ) {
   if (options?.verbose || options?.dryRun) {
-    log(formatLogMsg(data, format, options.dryRun), true);
-  }
-}
-
-function log(msg: string, verbose?: boolean) {
-  if (verbose) {
-    console.log(msg);
+    const formatted = formatLogMsg(data, format, options?.dryRun);
+    log(formatted, true);
   }
 }
 
 function formatLogMsg(
-  data: Entry[],
+  data: Data[],
   format: (file: string) => string,
   dryRun?: boolean,
 ): string {
   return data.filter((entry) => !entry.isComment).map((entry) =>
     `${dryRun ? "[dry-run]" : ""}    ${format(entry.name)}`
   ).join("\n");
+}
+
+function log(msg: string, verbose?: boolean) {
+  if (verbose) {
+    Writer.writeAllSync(Deno.stdout, msg + "\n");
+  }
 }
 
 async function deleteFile(file: string) {
@@ -74,78 +97,4 @@ function getCacheDir(): string | null {
   return null;
 }
 
-interface Entry {
-  name: string;
-  isComment: boolean;
-}
-
-interface Entries {
-  added: Entry[];
-  skipped: Entry[];
-  addCount: number;
-  skipCount: number;
-}
-
-async function parseEntries(
-  rawEntries: string[],
-  overwrite: boolean,
-): Promise<Entries> {
-  const ignoredEntries = overwrite ? {} : await getIgnoredEntries();
-
-  // Map strings to Entry objects
-  const entries = rawEntries.map((entry) => ({
-    name: entry,
-    isComment: entry.startsWith("#"),
-  }));
-
-  const [skipped, added]: [Entry[], Entry[]] = entries.reduce(
-    (acc, entry) => {
-      if (ignoredEntries[entry.name]) {
-        acc[0].push(entry);
-      } else {
-        acc[1].push(entry);
-      }
-      return acc;
-    },
-    [[], []] as [Entry[], Entry[]],
-  );
-
-  return {
-    added,
-    skipped,
-    addCount: added.filter((entry) => !entry.isComment).length,
-    skipCount: skipped.filter((entry) => !entry.isComment).length,
-  };
-}
-
-/// Gets the list of files that are already ignored.
-async function getIgnoredEntries(): Promise<IgnoredFiles> {
-  try {
-    const content = await Deno.readFile(".gitignore");
-    const lines = new TextDecoder().decode(content).split("\n");
-    // Trim trailing new lines and map the entries to IgnoredFiles object
-    return lines.reduce((acc, line) => {
-      if (line.trim().length > 0) {
-        acc[line] = true;
-      }
-      return acc;
-    }, {} as IgnoredFiles);
-  } catch (e) {
-    if (e instanceof Deno.errors.NotFound) {
-      return {} as IgnoredFiles;
-    }
-    throw new CliError(
-      `failed to read .gitignore`,
-    );
-  }
-}
-export {
-  addFileLogMessageFormat,
-  deleteFile,
-  getCacheDir,
-  getIgnoredEntries,
-  log,
-  logEntries,
-  parseEntries,
-  skipFileLogMessageFormat,
-};
+export { deleteFile, getCacheDir, log, logEntries, Writer };

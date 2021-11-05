@@ -12,7 +12,6 @@ import { Writer } from "./util.ts";
 
 export interface Arguments {
   clearCache: boolean;
-  confirm: boolean;
   dryRun: boolean;
   entries: string[];
   help: boolean;
@@ -41,7 +40,6 @@ export async function parseArgs(): Promise<Arguments> {
 
   const {
     "clear-cache": clearCache,
-    confirm,
     dryRun,
     help,
     lang,
@@ -55,7 +53,6 @@ export async function parseArgs(): Promise<Arguments> {
     {
       boolean: [
         "clear-cache",
-        "confirm",
         "help",
         "search",
         "version",
@@ -73,7 +70,6 @@ export async function parseArgs(): Promise<Arguments> {
         s: "search",
         v: "verbose",
         V: "version",
-        y: "confirm",
       },
     },
   );
@@ -108,7 +104,6 @@ export async function parseArgs(): Promise<Arguments> {
 
   return {
     clearCache,
-    confirm,
     dryRun,
     entries: entries.map((entry) => entry.toString()),
     lang,
@@ -135,7 +130,6 @@ ${yellow("OPTIONS:")}
 
 ${yellow("FLAGS:")}
     -c,  --clear-cache      Clear the cache before fetching the template.
-    -y,  --confirm          Skip confirmation prompt.
     -d,  --dry-run          Do not perform I/O operations.
     -o,  --overwrite        Overwrites the .gitignore file if it already exists.
     -s   --search           Interactively search through the available templates.

@@ -8,6 +8,7 @@ import {
   yellow,
 } from "../deps.ts";
 import CliError from "./error.ts";
+import { Writer } from "./util.ts";
 
 export interface Arguments {
   clearCache: boolean;
@@ -121,7 +122,8 @@ export async function parseArgs(): Promise<Arguments> {
 
 export function printUsage() {
   printVersion();
-  console.log(
+  Writer.writeAllSync(
+    Deno.stdout,
     `Small command-line utility for adding new entries to .gitignore.
 This is free software, and you are welcome to redistribute it under the terms of the GPLv3 license.
 
@@ -156,5 +158,5 @@ ${yellow("EXAMPLES:")}
 }
 
 export function printVersion() {
-  console.log("v0.2.2");
+  Writer.writeAllSync(Deno.stdout, "v0.2.2\n");
 }

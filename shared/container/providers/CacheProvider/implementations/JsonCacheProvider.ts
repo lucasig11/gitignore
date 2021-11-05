@@ -1,5 +1,5 @@
 import ICacheProvider from "../models/ICacheProvider.ts";
-import { getCacheDir } from "../../../../util.ts";
+import { getCacheDir, Writer } from "../../../../util.ts";
 
 const cacheFolder = "/gitignore/";
 const cacheFile = "cache.json";
@@ -11,18 +11,15 @@ export default class JsonCacheProvider implements ICacheProvider {
 
   constructor() {
     try {
-      const contents = Deno.readFileSync(cacheFullPath);
-      this.cache = JSON.parse(new TextDecoder().decode(contents));
+      const content = Deno.readTextFileSync(cacheFullPath);
+      this.cache = JSON.parse(content);
     } catch (e) {
       if (e instanceof Deno.errors.NotFound) {
         if (getCacheDir() == null) {
           this.enabled = false;
         } else {
           Deno.mkdirSync(getCacheDir() + cacheFolder, { recursive: true });
-          Deno.writeFileSync(
-            cacheFullPath,
-            new TextEncoder().encode("{}"),
-          );
+          Writer.writeTextFileSync(cacheFullPath, "{}");
         }
       }
     }
@@ -31,10 +28,7 @@ export default class JsonCacheProvider implements ICacheProvider {
   public async set(key: string, value: string): Promise<void> {
     this.cache[key] = value;
     if (this.enabled) {
-      await Deno.writeFile(
-        cacheFullPath,
-        new TextEncoder().encode(JSON.stringify(this.cache)),
-      );
+      await Deno.writeTextFile(cacheFullPath, JSON.stringify(this.cache));
     }
   }
 
@@ -46,13 +40,11 @@ export default class JsonCacheProvider implements ICacheProvider {
     return this.cache[key] !== undefined;
   }
 
-  public async clear(): Promise<void> {
+  public clear(): Promise<void> {
     this.cache = {};
     if (this.enabled) {
-      await Deno.writeFile(
-        cacheFullPath,
-        new TextEncoder().encode("{}"),
-      );
+      Writer.writeTextFileSync(cacheFullPath, "{}");
     }
+    return Promise.resolve();
   }
 }

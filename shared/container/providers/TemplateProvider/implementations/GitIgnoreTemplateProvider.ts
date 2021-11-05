@@ -29,7 +29,6 @@ export default class GitIgnoreTemplateProvider implements ITemplateProvider {
     );
   }
 
-  // TODO: refactor into API agnostic template provider
   async fetchTemplate(lang: string): Promise<string[]> {
     if (this.cacheProvider.has(lang)) {
       return this.cacheProvider.get(lang).split("\n").filter((line) =>

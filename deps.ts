@@ -17,6 +17,7 @@ export {
   Inject,
   Injectable,
 } from "https://deno.land/x/alosaur@v0.34.0/mod.ts";
+export { writeAllSync } from "https://deno.land/std@0.113.0/streams/mod.ts";
 
 import cacheDir from "https://deno.land/x/cache_dir@v0.1.1/mod.ts";
 
